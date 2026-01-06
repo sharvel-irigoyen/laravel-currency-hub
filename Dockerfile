@@ -34,6 +34,9 @@ WORKDIR /var/www/currency-hub
 # Ajustar permisos del directorio de trabajo
 RUN chown -R www-data:www-data /var/www/currency-hub
 
+# Fix Pest Mutate Plugin Permission Issue
+RUN mkdir -p /tmp/pest-mutate-cache && chown -R www-data:www-data /tmp/pest-mutate-cache && chmod 777 /tmp/pest-mutate-cache
+
 # Cambiar al usuario no-root
 USER www-data
 

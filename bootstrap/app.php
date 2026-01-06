@@ -26,7 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, \Illuminate\Http\Request $request) {
             if ($request->is('api/*')) {
                 return response()->json([
-                    'message' => 'Record not found.',
+                    'message' => $e->getMessage() ?: 'Record not found.',
                 ], 404);
             }
         });

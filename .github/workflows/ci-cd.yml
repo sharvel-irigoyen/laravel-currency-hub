@@ -70,6 +70,9 @@ jobs:
         npm ci
         npm run build
 
+    - name: Create Pest Cache Directory
+      run: mkdir -p /tmp/pest-mutate-cache && chmod 777 /tmp/pest-mutate-cache
+
     - name: Execute Tests (Unit & Feature)
       env:
         DB_CONNECTION: mysql
