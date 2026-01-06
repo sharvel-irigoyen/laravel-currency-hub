@@ -1,0 +1,12 @@
+services:
+  # =========================================
+  # LOCAL DEV OVERRIDES
+  # =========================================
+  currency-hub-nginx:
+    ports:
+      - "8081:80"
+
+  currency-hub-php:
+    environment:
+      APP_ENV: local
+      APP_DEBUG: 'true'
