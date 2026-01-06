@@ -24,6 +24,7 @@ services:
           php artisan key:generate --force;
         fi &&
         php artisan storage:link || true &&
+        php artisan migrate --force &&
         [ -f package.json ] && npm ci && npm run build || true &&
         php-fpm
       "
