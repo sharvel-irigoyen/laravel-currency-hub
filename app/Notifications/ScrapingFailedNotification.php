@@ -22,7 +22,8 @@ class ScrapingFailedNotification extends Notification
     public function via($notifiable): array
     {
         // Returns enabled channels
-        return ['mail', 'slack', 'telegram']; // Telegram requires a driver
+        return ['mail'];
+        // return ['mail', 'slack', 'telegram'];
     }
 
     public function toMail($notifiable): MailMessage
