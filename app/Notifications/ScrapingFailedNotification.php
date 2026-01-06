@@ -29,10 +29,7 @@ class ScrapingFailedNotification extends Notification
     {
         return (new MailMessage)
                     ->subject('⚠️ Scraping Failed Alert')
-                    ->line('The currency scraping job has failed after 3 attempts.')
-                    ->line('Error: ' . $this->errorMessage)
-                    ->action('Check Logs', url('/'))
-                    ->line('Please investigate immediately.');
+                    ->view('emails.scraping-failed', ['errorMessage' => $this->errorMessage]);
     }
 
     public function toSlack($notifiable): SlackMessage
