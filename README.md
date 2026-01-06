@@ -10,7 +10,7 @@ Un microservicio API-First basado en Laravel y Docker para extraer, almacenar y 
 -   **Multi-Origen**: Soporte para tipos de cambio "Paralelo" y "Sunat" con extracción diferenciada.
 -   **Background Jobs con Redis**: Scraping asíncrono gestionado por colas para no bloquear la aplicación.
 -   **Testing Automatizado**: Suite de pruebas completa (Feature & Unit) con Pest/PHPUnit.
--   **Infraestructura Dockerizada**: Stack completo con Nginx, PHP-FPM 8.4, MySQL 8 y Redis.
+-   **Infraestructura Dockerizada**: Stack completo con Nginx, PHP-FPM 8.2+, MySQL 8 y Redis (con healthchecks robustos).
 
 ---
 
@@ -21,7 +21,7 @@ Un microservicio API-First basado en Laravel y Docker para extraer, almacenar y 
 -   Docker y Docker Compose
 -   Git
 
-### Pasos para Desarrollo Local
+### Pasos para Despliegue (Local o Producción)
 
 1.  **Clonar el repositorio**:
     ```bash
@@ -32,29 +32,23 @@ Un microservicio API-First basado en Laravel y Docker para extraer, almacenar y 
 2.  **Configurar variables de entorno**:
     ```bash
     cp .env.example .env
-    # Ajustar DB_PASSWORD, REDIS_HOST etc. si es necesario.
-    # Por defecto funciona con la configuración de docker-compose.yml.
+    # Producción: Cambiar APP_ENV=production, APP_DEBUG=false
+    # Ajustar credenciales de DB/Redis.
+    # Importante: Si tus contraseñas tienen '$', usa '$$' para escapar en docker-compose.
     ```
 
 3.  **Levantar servicios**:
     ```bash
     docker compose up -d --build
     ```
+    > **Nota:** Las migraciones de base de datos se ejecutan **automáticamente** al iniciar el contenedor.
 
-4.  **Instalación inicial**:
+4.  **Generar Token de Acceso (Producción/Dev)**:
+    Para consumir la API, necesitas generar un token para tu cliente.
     ```bash
-    # Instalar dependencias de PHP
-    docker exec currency-hub-php composer install
-
-    # Ejecutar migraciones
-    docker exec currency-hub-php php artisan migrate
-
-    # Generar Key de aplicación
-    docker exec currency-hub-php php artisan key:generate
-
-    # (Opcional) Generar token de acceso para desarrollo
-    docker exec currency-hub-php php artisan dev:token
+    docker compose exec currency-hub-php php artisan api:create-token "Cliente Nombre" "email@cliente.com"
     ```
+    *Este comando creará el usuario (si no existe) y mostrará el token en pantalla. Guárdalo en un lugar seguro.*
 
 ---
 
@@ -78,14 +72,14 @@ Obtiene el último tipo de cambio registrado.
 ```bash
 curl -H "Authorization: Bearer <TOKEN>" \
      -H "Accept: application/json" \
-     "http://localhost:8081/api/exchange-rate"
+     "https://tudominio.com/api/exchange-rate"
 ```
 
 **Ejemplo de Petición (Sunat):**
 ```bash
 curl -H "Authorization: Bearer <TOKEN>" \
      -H "Accept: application/json" \
-     "http://localhost:8081/api/exchange-rate?type=sunat"
+     "https://tudominio.com/api/exchange-rate?type=sunat"
 ```
 
 **Respuesta Exitosa (200 OK):**
@@ -112,16 +106,13 @@ curl -H "Authorization: Bearer <TOKEN>" \
 
 ## 🕷️ Scraping Manual y Programado
 
-El scraping se ejecuta automáticamente cada hora (configurado en `routes/console.php` y ejecutado por el contenedor `scheduler`).
+El scraping se ejecuta automáticamente **todos los días a las 08:00 AM** (configurado en `routes/console.php` y ejecutado por el contenedor `scheduler`).
 
 Para forzar una ejecución manual:
 
 ```bash
-# Método 1: Ejecutar el Job inmediatamente (vía Queue)
-docker exec currency-hub-php php artisan tinker --execute="App\Jobs\ScrapeCurrencyJob::dispatch();"
-
-# Método 2: Ejecutar vía Scheduler (si es la hora o forzando test)
-docker exec currency-hub-php php artisan schedule:test
+# Ejecutar el Job inmediatamente (vía Queue)
+docker compose exec currency-hub-php php artisan tinker --execute="App\Jobs\ScrapeCurrencyJob::dispatch();"
 ```
 
 ---
@@ -131,7 +122,7 @@ docker exec currency-hub-php php artisan schedule:test
 Para ejecutar la suite de pruebas automatizadas:
 
 ```bash
-docker exec currency-hub-php php artisan test
+docker compose exec currency-hub-php php artisan test
 ```
 
 Esto validará:
@@ -146,7 +137,7 @@ Esto validará:
 
 | Acción | Comando Docker |
 | :--- | :--- |
-| **Generar Token Dev** | `docker exec currency-hub-php php artisan dev:token` |
-| **Ver Logs Laravel** | `tail -f storage/logs/laravel.log` |
-| **Reiniciar Colas** | `docker exec currency-hub-php php artisan queue:restart` |
-| **Limpiar Caché** | `docker exec currency-hub-php php artisan optimize:clear` |
+| **Generar Token API** | `docker compose exec currency-hub-php php artisan api:create-token <Nombre> <Email>` |
+| **Ver Logs Worker** | `docker logs -f currency-hub-worker` |
+| **Reiniciar Colas** | `docker compose exec currency-hub-php php artisan queue:restart` |
+| **Limpiar Caché** | `docker compose exec currency-hub-php php artisan optimize:clear` |
