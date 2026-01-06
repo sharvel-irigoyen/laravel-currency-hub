@@ -126,7 +126,7 @@ jobs:
           docker compose exec -T -u root currency-hub-php chown -R www-data:www-data /var/www
 
           # Ejecutar comandos dentro del contenedor PHP
-          docker compose exec -T currency-hub-php composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+          docker compose exec -T currency-hub-php composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-scripts
           docker compose exec -T currency-hub-php php artisan migrate --force
           docker compose exec -T currency-hub-php php artisan optimize:clear
           docker compose exec -T currency-hub-php php artisan config:cache
