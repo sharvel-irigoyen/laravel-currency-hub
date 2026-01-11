@@ -13,10 +13,14 @@ class ScrapingFailedNotification extends Notification
     use Queueable;
 
     public $errorMessage;
+    public $source;
+    public $sourceUrl;
 
-    public function __construct($errorMessage)
+    public function __construct($errorMessage, $source = 'Target Website', $sourceUrl = '#')
     {
         $this->errorMessage = $errorMessage;
+        $this->source = $source;
+        $this->sourceUrl = $sourceUrl;
     }
 
     public function via($notifiable): array
@@ -29,8 +33,12 @@ class ScrapingFailedNotification extends Notification
     public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-                    ->subject('⚠️ Scraping Failed Alert')
-                    ->view('emails.scraping-failed', ['errorMessage' => $this->errorMessage]);
+                    ->subject("⚠️ Scraping Failed Alert: {$this->source}")
+                    ->view('emails.scraping-failed', [
+                        'errorMessage' => $this->errorMessage,
+                        'source' => $this->source,
+                        'sourceUrl' => $this->sourceUrl,
+                    ]);
     }
 
     public function toSlack($notifiable): SlackMessage

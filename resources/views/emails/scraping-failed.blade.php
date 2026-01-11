@@ -36,7 +36,7 @@
     <div style="padding: 32px;">
       <h2 style="font-size: 20px; font-weight: 600; color: #1e293b; margin-bottom: 16px;">Critical Error Detected</h2>
       <p style="margin-bottom: 24px; font-size: 16px; line-height: 1.5; color: #475569;">
-        The scheduled currency scraping job has failed after <strong>3 consecutive attempts</strong>. This requires immediate attention to ensure data continuity.
+        The scheduled {{ $source ?? 'Currency' }} scraping job has failed after <strong>3 consecutive attempts</strong>. This requires immediate attention to ensure data continuity.
       </p>
 
       <!-- Error Details Box -->
@@ -55,7 +55,7 @@
       </div>
 
       <p style="margin: 0; font-size: 14px; color: #64748b;">
-        If this persists, please verify the spider selectors and the target website availability (cuantoestaeldolar.pe).
+        If this persists, please verify the spider selectors and the target website availability: <a href="{{ $sourceUrl ?? '#' }}" target="_blank" style="color: #4f46e5; text-decoration: underline;">{{ $source ?? 'Target Site' }}</a>.
       </p>
     </div>
 

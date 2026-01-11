@@ -38,13 +38,17 @@ class ScrapePreciousMetalsJob implements ShouldQueue
      */
     public function failed(Throwable $exception): void
     {
-        // Notification logic similar to ScrapeCurrencyJob
+        // Notification logic aligned with ScrapeCurrencyJob
         $recipient = \Illuminate\Support\Facades\Route::has('admin') ? \App\Models\User::first() : new \Illuminate\Notifications\AnonymousNotifiable;
 
-        if ($recipient instanceof \Illuminate\Notifications\AnonymousNotifiable) {
-             $recipient->route('mail', config('mail.from.address'));
-        }
+        $recipient->route('mail', config('mail.from.address'))
+                  ->route('slack', config('services.slack.webhook_url'))
+                  ->route('telegram', config('services.telegram.chat_id'));
 
-        Notification::send($recipient, new ScrapingFailedNotification("Kitco Scraper Failed: " . $exception->getMessage()));
+        Notification::send($recipient, new ScrapingFailedNotification(
+            "Kitco Spider Failed: " . $exception->getMessage(),
+            'Kitco',
+            'https://www.kitco.com/price/precious-metals'
+        ));
     }
 }

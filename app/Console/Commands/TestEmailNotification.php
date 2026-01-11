@@ -28,13 +28,17 @@ class TestEmailNotification extends Command
     public function handle()
     {
         $email = $this->argument('email');
-        $errorMessage = "Simulated Error: Connection timeout while trying to reach cuantoestaeldolar.pe at " . now();
+        $errorMessage = "Simulated Error: This is a test error message generated at " . now();
 
         $this->info("Sending test notification to: {$email}...");
 
         try {
             Notification::route('mail', $email)
-                ->notify(new ScrapingFailedNotification($errorMessage));
+                ->notify(new ScrapingFailedNotification(
+                    $errorMessage,
+                    'Manual Test Command',
+                    'https://example.com/manual-test'
+                ));
 
             $this->info("✅ Notification sent successfully (queued or sent depending on config)!");
             $this->comment("Check your inbox (or Mailtrap/Log depending on MAIL_MAILER).");

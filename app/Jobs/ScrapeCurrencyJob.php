@@ -60,6 +60,10 @@ class ScrapeCurrencyJob implements ShouldQueue
         // WhatsApp is often custom channel, commonly via Twilio
         // $recipient->route(WhatsAppChannel::class, 'number');
 
-        Notification::send($recipient, new ScrapingFailedNotification($exception->getMessage()));
+        Notification::send($recipient, new ScrapingFailedNotification(
+            $exception->getMessage(),
+            'CuantoEstaElDolar.pe',
+            'https://cuantoestaeldolar.pe'
+        ));
     }
 }

@@ -168,18 +168,21 @@ class KitcoSpider extends BasicSpider
                 if (!empty($processedMetals)) {
                     return;
                 }
-                Log::warning("JSON found but no metals matched in queries.");
+
+                // CRITICAL: No metals found despite JSON parsing. This is a scraping failure.
+                throw new \Exception("JSON found but no metals matched in queries. Structure might have changed.");
 
             } catch (\Exception $e) {
-                Log::error("JSON Parsing Error: " . $e->getMessage());
+                // Re-throw to trigger Job Failure & Notification
+                throw new \Exception("JSON Parsing Error: " . $e->getMessage());
             }
         } else {
-             Log::warning("No __NEXT_DATA__ script found.");
+             // CRITICAL: No data script found.
+             throw new \Exception("No __NEXT_DATA__ script found on Kitco page.");
         }
 
         // Fallback or exit?
-        // If JSON fails, the previous regex might still be useful as a backup for just price.
-        // But for now, let's rely on JSON as it's the "Source of Truth" for the frontend.
+        // If we reached here, something went wrong.
     }
 
     protected function initialRequests(): array
