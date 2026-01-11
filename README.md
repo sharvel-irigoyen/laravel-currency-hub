@@ -1,79 +1,79 @@
 # Currency & Metals Hub API
 
-Un microservicio API-First basado en Laravel y Docker para extraer, almacenar y servir datos financieros en tiempo real. Provee información unificada de dos fuentes principales:
+An API-First microservice based on Laravel and Docker for extracting, storing, and serving financial data in real-time. It provides unified information from two main sources:
 
-1.  **Tipo de Cambio (Perú)**: Dólar Paralelo y Sunat (Fuente: *cuantoestaeldolar.pe*).
-2.  **Metales Preciosos (Global)**: Oro, Plata, Platino, Paladio y Rodio (Fuente: *Kitco*).
+1.  **Exchange Rate (Peru)**: Parallel Dollar and Sunat (Source: *cuantoestaeldolar.pe*).
+2.  **Precious Metals (Global)**: Gold, Silver, Platinum, Palladium, and Rhodium (Source: *Kitco*).
 
-Diseñado para ser seguro, escalable y fácil de desplegar.
+Designed to be secure, scalable, and easy to deploy.
 
-## Características
+## Features
 
--   **API Restful y Segura**: Endpoints protegidos con Laravel Sanctum. Respuestas estandarizadas en JSON.
--   **Seguridad por Defecto**: La ruta raíz `/` retorna 404 en producción. Documentación restringida localmente.
--   **Web Scraping Robusto**: Implementado con [Roach PHP](https://roach-php.dev/), capaz de extraer datos dinámicos (Next.js) de múltiples fuentes simultáneamente.
--   **Logística de Metales**: Cálculo automático de conversión de unidades (Onzas/Gramos) y factores de pureza (18K, 925, etc.).
--   **Background Jobs con Redis**: Scraping asíncrono gestionado por colas para alta disponibilidad.
--   **Testing Automatizado**: Suite de pruebas completa (Feature & Unit) con Pest/PHPUnit.
--   **Infraestructura Dockerizada**: Stack completo con Nginx, PHP-FPM 8.2+, MySQL 8 y Redis.
+-   **Secure & Restful API**: Endpoints protected with Laravel Sanctum. Standardized JSON responses.
+-   **Security by Default**: The root route `/` returns 404 in production. Documentation access restricted locally.
+-   **Robust Web Scraping**: Implemented with [Roach PHP](https://roach-php.dev/), capable of extracting dynamic data (Next.js) from multiple sources simultaneously.
+-   **Metals Logistics**: Automatic unit conversion (Ounces/Grams) and purity factor calculation (18K, 925, etc.).
+-   **Background Jobs with Redis**: Asynchronous scraping managed by queues for high availability.
+-   **Automated Testing**: Complete test suite (Feature & Unit) with Pest/PHPUnit.
+-   **Dockerized Infrastructure**: Full stack with Nginx, PHP-FPM 8.2+, MySQL 8, and Redis.
 
 ---
 
-## 🚀 Instalación y Despliegue
+## 🚀 Installation and Deployment
 
-### Requisitos Previos
+### Prerequisites
 
--   Docker y Docker Compose
+-   Docker and Docker Compose
 -   Git
 
-### Pasos para Despliegue (Local o Producción)
+### Deployment Steps (Local or Production)
 
-1.  **Clonar el repositorio**:
+1.  **Clone the repository**:
     ```bash
     git clone <repo-url>
     cd currency-hub
     ```
 
-2.  **Configurar variables de entorno**:
+2.  **Configure environment variables**:
     ```bash
     cp .env.example .env
-    # Producción: Cambiar APP_ENV=production, APP_DEBUG=false
-    # Ajustar credenciales de DB/Redis.
-    # Importante: Si tus contraseñas tienen '$', usa '$$' para escapar en docker-compose.
+    # Production: Change APP_ENV=production, APP_DEBUG=false
+    # Adjust DB/Redis credentials.
+    # Important: If your passwords have '$', use '$$' to escape in docker-compose.
     ```
 
-3.  **Levantar servicios**:
+3.  **Start services**:
     ```bash
     docker compose up -d --build
     ```
-    > **Nota:** Las migraciones de base de datos se ejecutan **automáticamente** al iniciar el contenedor.
+    > **Note:** Database migrations run **automatically** when the container starts.
 
-4.  **Generar Token de Acceso (Producción/Dev)**:
-    Para consumir la API, necesitas generar un token para tu cliente.
+4.  **Generate Access Token (Production/Dev)**:
+    To consume the API, you need to generate a token for your client.
     ```bash
-    docker compose exec currency-hub-php php artisan api:create-token "Cliente Nombre" "email@cliente.com"
+    docker compose exec currency-hub-php php artisan api:create-token "Client Name" "email@client.com"
     ```
-    *Este comando creará el usuario (si no existe) y mostrará el token en pantalla. Guárdalo en un lugar seguro.*
+    *This command will create the user (if it doesn't exist) and display the token on screen. Save it in a safe place.*
 
 ---
 
-## 📚 Documentación de API
+## 📚 API Documentation
 
-La API está protegida por **Laravel Sanctum**. Todas las peticiones deben incluir el header:
-`Authorization: Bearer <tu-token>`
+The API is protected by **Laravel Sanctum**. All requests must include the header:
+`Authorization: Bearer <your-token>`
 
-### 1. Tipos de Cambio (Soles/Dólares)
+### 1. Exchange Rates (Soles/Dollars)
 
-Obtén la tasa de cambio actual o histórica (Fuente: *cuantoestaeldolar.pe*).
+Get the current or historical exchange rate (Source: *cuantoestaeldolar.pe*).
 
 **Endpoint:** `GET /api/exchange-rate`
 
-| Parámetro | Tipo | Opcional | Descripción |
+| Parameter | Type | Optional | Description |
 | :--- | :--- | :--- | :--- |
-| `type` | `string` | Sí | `parallel` (default) o `sunat`. |
-| `date` | `date` | Sí | Formato `YYYY-MM-DD`. Default: Hoy. |
+| `type` | `string` | Yes | `parallel` (default) or `sunat`. |
+| `date` | `date` | Yes | Format `YYYY-MM-DD`. Default: Today. |
 
-**Ejemplo de Respuesta:**
+**Response Example:**
 ```json
 {
     "data": {
@@ -89,16 +89,16 @@ Obtén la tasa de cambio actual o histórica (Fuente: *cuantoestaeldolar.pe*).
 
 ---
 
-### 2. Metales Preciosos (Kitco)
+### 2. Precious Metals (Kitco)
 
-APIs para obtener precios de Oro, Plata, Platino, Paladio y Rodio. Soporta conversión de unidades, cálculo de pureza (quilates) y búsqueda histórica.
+APIs to get prices for Gold, Silver, Platinum, Palladium, and Rhodium. Supports unit conversion, purity calculation (karats), and historical search.
 
-#### A. Listado General (Dashboard)
-Retorna el *último* precio registrado para todos los metales soportados.
+#### A. General Listing (Dashboard)
+Returns the *latest* recorded price for all supported metals.
 
 **Endpoint:** `GET /api/precious-metals`
 
-**Ejemplo de Respuesta:**
+**Response Example:**
 ```json
 {
     "data": [
@@ -118,30 +118,30 @@ Retorna el *último* precio registrado para todos los metales soportados.
 }
 ```
 
-#### B. Detalle de Metal (Filtros y Conversiones)
-Obtén el precio de un metal específico con opciones avanzadas de conversión.
+#### B. Metal Detail (Filters and Conversions)
+Get the price of a specific metal with advanced conversion options.
 
 **Endpoint:** `GET /api/precious-metals/{metal}`
 
-| Parámetro (Path) | Valores |
+| Parameter (Path) | Values |
 | :--- | :--- |
 | `metal` | `GOLD`, `SILVER`, `PLATINUM`, `PALLADIUM`, `RHODIUM` |
 
-| Parámetro (Query) | Descripción | Ejemplo |
+| Parameter (Query) | Description | Example |
 | :--- | :--- | :--- |
-| `unit` | Unidad de peso. `OZ` (default) o `GRAM`. | `?unit=GRAM` |
-| `purity` | Factor de pureza. Ver tabla abajo. | `?purity=18K` |
-| `date` | Fecha histórica (`YYYY-MM-DD`). | `?date=2026-01-08` |
-| `time` | Hora (`HH`) o Hora Exacta (`HH:mm`). | `?time=14:30` |
+| `unit` | Weight unit. `OZ` (default) or `GRAM`. | `?unit=GRAM` |
+| `purity` | Purity factor. See table below. | `?purity=18K` |
+| `date` | Historical Date (`YYYY-MM-DD`). | `?date=2026-01-08` |
+| `time` | Hour (`HH`) or Exact Time (`HH:mm`). | `?time=14:30` |
 
-**Tabla de Purezas Soportadas:**
-- **Oro:** `24K` (1.0), `22K` (0.916), `18K` (0.750), `14K` (0.583), `10K` (0.417).
-- **Plata:** `999` (0.999), `STERLING` o `925` (0.925), `COIN` (0.900).
-- **Platino/Paladio:** `950`, `900`, `850`.
+**Supported Purities Table:**
+- **Gold:** `24K` (1.0), `22K` (0.916), `18K` (0.750), `14K` (0.583), `10K` (0.417).
+- **Silver:** `999` (0.999), `STERLING` or `925` (0.925), `COIN` (0.900).
+- **Platinum/Palladium:** `950`, `900`, `850`.
 
-**Ejemplos de Uso:**
+**Usage Examples:**
 
-**1. Precio del Oro de 18 Quilates en Gramos:**
+**1. Price of 18K Gold in Grams:**
 `GET /api/precious-metals/GOLD?unit=GRAM&purity=18K`
 ```json
 {
@@ -149,24 +149,24 @@ Obtén el precio de un metal específico con opciones avanzadas de conversión.
         "metal": "GOLD",
         "purity": "18K",
         "unit": "GRAM",
-        "price": 64.50, // (Precio Onza * 0.750) / 31.1035
+        "price": 64.50, // (Ounce Price * 0.750) / 31.1035
         ...
     }
 }
 ```
 
-**2. Precio Histórico de la Plata (Hora específica):**
+**2. Historical Silver Price (Specific Time):**
 `GET /api/precious-metals/SILVER?date=2025-12-25&time=10:00`
 ---
 
-## 🕷️ Scraping Manual y Programado
+## 🕷️ Manual and Scheduled Scraping
 
-El scraping se ejecuta automáticamente **todos los días a las 08:00 AM** (configurado en `routes/console.php` y ejecutado por el contenedor `scheduler`).
+Scraping runs automatically **every day at 08:00 AM** (configured in `routes/console.php` and executed by the `scheduler` container).
 
-Para forzar una ejecución manual:
+To force a manual execution:
 
 ```bash
-# Ejecutar el Job inmediatamente (vía Queue)
+# Run the Job immediately (via Queue)
 docker compose exec currency-hub-php php artisan tinker --execute="App\Jobs\ScrapeCurrencyJob::dispatch();"
 ```
 
@@ -174,25 +174,25 @@ docker compose exec currency-hub-php php artisan tinker --execute="App\Jobs\Scra
 
 ## ✅ Testing
 
-Para ejecutar la suite de pruebas automatizadas:
+To run the automated test suite:
 
 ```bash
 docker compose exec currency-hub-php php artisan test
 ```
 
-Esto validará:
--   Respuestas correctas de la API (200, 401, 404).
--   Filtros de búsqueda.
--   Inserción correcta en base de datos.
--   Ejecución del spider.
+This will validate:
+-   Correct API responses (200, 401, 404).
+-   Search filters.
+-   Correct database insertion.
+-   Spider execution.
 
 ---
 
-## 🛠️ Comandos Útiles
+## 🛠️ Useful Commands
 
-| Acción | Comando Docker |
+| Action | Docker Command |
 | :--- | :--- |
-| **Generar Token API** | `docker compose exec currency-hub-php php artisan api:create-token <Nombre> <Email>` |
-| **Ver Logs Worker** | `docker logs -f currency-hub-worker` |
-| **Reiniciar Colas** | `docker compose exec currency-hub-php php artisan queue:restart` |
-| **Limpiar Caché** | `docker compose exec currency-hub-php php artisan optimize:clear` |
+| **Generate API Token** | `docker compose exec currency-hub-php php artisan api:create-token <Name> <Email>` |
+| **View Worker Logs** | `docker logs -f currency-hub-worker` |
+| **Restart Queues** | `docker compose exec currency-hub-php php artisan queue:restart` |
+| **Clear Cache** | `docker compose exec currency-hub-php php artisan optimize:clear` |
