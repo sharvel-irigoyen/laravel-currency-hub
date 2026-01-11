@@ -1,16 +1,21 @@
-# Currency Hub Scraper API
+# Currency & Metals Hub API
 
-Un microservicio API-First basado en Laravel y Docker para extraer, almacenar y servir el tipo de cambio paralelo y Sunat de Perú (fuente: cuantoestaeldolar.pe). Diseñado para ser seguro, escalable y fácil de desplegar.
+Un microservicio API-First basado en Laravel y Docker para extraer, almacenar y servir datos financieros en tiempo real. Provee información unificada de dos fuentes principales:
+
+1.  **Tipo de Cambio (Perú)**: Dólar Paralelo y Sunat (Fuente: *cuantoestaeldolar.pe*).
+2.  **Metales Preciosos (Global)**: Oro, Plata, Platino, Paladio y Rodio (Fuente: *Kitco*).
+
+Diseñado para ser seguro, escalable y fácil de desplegar.
 
 ## Características
 
 -   **API Restful y Segura**: Endpoints protegidos con Laravel Sanctum. Respuestas estandarizadas en JSON.
--   **Seguridad por Defecto**: La ruta raíz `/` retorna 404 en producción para evitar exposición innecesaria. Acceso a documentación restringido a entorno local.
--   **Web Scraping Robusto**: Implementado con [Roach PHP](https://roach-php.dev/), capaz de extraer datos dinámicos (Next.js) y manejar selectores complejos.
--   **Multi-Origen**: Soporte para tipos de cambio "Paralelo" y "Sunat" con extracción diferenciada.
--   **Background Jobs con Redis**: Scraping asíncrono gestionado por colas para no bloquear la aplicación.
+-   **Seguridad por Defecto**: La ruta raíz `/` retorna 404 en producción. Documentación restringida localmente.
+-   **Web Scraping Robusto**: Implementado con [Roach PHP](https://roach-php.dev/), capaz de extraer datos dinámicos (Next.js) de múltiples fuentes simultáneamente.
+-   **Logística de Metales**: Cálculo automático de conversión de unidades (Onzas/Gramos) y factores de pureza (18K, 925, etc.).
+-   **Background Jobs con Redis**: Scraping asíncrono gestionado por colas para alta disponibilidad.
 -   **Testing Automatizado**: Suite de pruebas completa (Feature & Unit) con Pest/PHPUnit.
--   **Infraestructura Dockerizada**: Stack completo con Nginx, PHP-FPM 8.2+, MySQL 8 y Redis (con healthchecks robustos).
+-   **Infraestructura Dockerizada**: Stack completo con Nginx, PHP-FPM 8.2+, MySQL 8 y Redis.
 
 ---
 
