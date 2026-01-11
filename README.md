@@ -52,56 +52,106 @@ Un microservicio API-First basado en Laravel y Docker para extraer, almacenar y 
 
 ---
 
-## 📡 Uso de la API
+## 📚 Documentación de API
 
-La API está protegida por Sanctum. Todas las peticiones deben incluir el header `Authorization: Bearer <token>`.
-La ruta base es `/api`.
+La API está protegida por **Laravel Sanctum**. Todas las peticiones deben incluir el header:
+`Authorization: Bearer <tu-token>`
 
-### 1. Obtener Tipo de Cambio Reciente
+### 1. Tipos de Cambio (Soles/Dólares)
 
-Obtiene el último tipo de cambio registrado.
+Obtén la tasa de cambio actual o histórica (Fuente: *cuantoestaeldolar.pe*).
 
 **Endpoint:** `GET /api/exchange-rate`
 
-**Parámetros (Query Params):**
+| Parámetro | Tipo | Opcional | Descripción |
+| :--- | :--- | :--- | :--- |
+| `type` | `string` | Sí | `parallel` (default) o `sunat`. |
+| `date` | `date` | Sí | Formato `YYYY-MM-DD`. Default: Hoy. |
 
--   `type` (opcional): Filtra por tipo de cambio. Valores: `parallel` (por defecto) o `sunat`.
--   `date` (opcional): Filtra por una fecha específica (`YYYY-MM-DD`). Por defecto es hoy.
-
-**Ejemplo de Petición (Paralelo):**
-```bash
-curl -H "Authorization: Bearer <TOKEN>" \
-     -H "Accept: application/json" \
-     "https://tudominio.com/api/exchange-rate"
-```
-
-**Ejemplo de Petición (Sunat):**
-```bash
-curl -H "Authorization: Bearer <TOKEN>" \
-     -H "Accept: application/json" \
-     "https://tudominio.com/api/exchange-rate?type=sunat"
-```
-
-**Respuesta Exitosa (200 OK):**
+**Ejemplo de Respuesta:**
 ```json
 {
     "data": {
         "id": 24,
         "source": "cuantoestaeldolar.pe",
         "type": "sunat",
-        "type_label": "Sunat",
-        "buy": 3.358,
-        "sell": 3.368,
-        "updated_at": "2026-01-06T02:07:21+00:00",
-        "time_ago": "2 minutes ago"
+        "buy": 3.758,
+        "sell": 3.768,
+        "updated_at": "2026-01-10T08:00:00.000000Z"
     }
 }
 ```
 
-**Respuestas de Error:**
--   `401 Unauthorized`: Token inválido o ausente.
--   `404 Not Found`: No hay datos disponibles para la fecha/tipo solicitados.
+---
 
+### 2. Metales Preciosos (Kitco)
+
+APIs para obtener precios de Oro, Plata, Platino, Paladio y Rodio. Soporta conversión de unidades, cálculo de pureza (quilates) y búsqueda histórica.
+
+#### A. Listado General (Dashboard)
+Retorna el *último* precio registrado para todos los metales soportados.
+
+**Endpoint:** `GET /api/precious-metals`
+
+**Ejemplo de Respuesta:**
+```json
+{
+    "data": [
+        {
+            "metal": "GOLD",
+            "unit": "OZ",
+            "currency": "USD",
+            "price": 2650.40,
+            "bid": 2650.40,
+            "ask": 2651.40,
+            "change_val": 15.20,
+            "change_percent": 0.57,
+            "market_time": "2026-01-10 16:59:59"
+        },
+        { "metal": "SILVER", ... }
+    ]
+}
+```
+
+#### B. Detalle de Metal (Filtros y Conversiones)
+Obtén el precio de un metal específico con opciones avanzadas de conversión.
+
+**Endpoint:** `GET /api/precious-metals/{metal}`
+
+| Parámetro (Path) | Valores |
+| :--- | :--- |
+| `metal` | `GOLD`, `SILVER`, `PLATINUM`, `PALLADIUM`, `RHODIUM` |
+
+| Parámetro (Query) | Descripción | Ejemplo |
+| :--- | :--- | :--- |
+| `unit` | Unidad de peso. `OZ` (default) o `GRAM`. | `?unit=GRAM` |
+| `purity` | Factor de pureza. Ver tabla abajo. | `?purity=18K` |
+| `date` | Fecha histórica (`YYYY-MM-DD`). | `?date=2026-01-08` |
+| `time` | Hora (`HH`) o Hora Exacta (`HH:mm`). | `?time=14:30` |
+
+**Tabla de Purezas Soportadas:**
+- **Oro:** `24K` (1.0), `22K` (0.916), `18K` (0.750), `14K` (0.583), `10K` (0.417).
+- **Plata:** `999` (0.999), `STERLING` o `925` (0.925), `COIN` (0.900).
+- **Platino/Paladio:** `950`, `900`, `850`.
+
+**Ejemplos de Uso:**
+
+**1. Precio del Oro de 18 Quilates en Gramos:**
+`GET /api/precious-metals/GOLD?unit=GRAM&purity=18K`
+```json
+{
+    "data": {
+        "metal": "GOLD",
+        "purity": "18K",
+        "unit": "GRAM",
+        "price": 64.50, // (Precio Onza * 0.750) / 31.1035
+        ...
+    }
+}
+```
+
+**2. Precio Histórico de la Plata (Hora específica):**
+`GET /api/precious-metals/SILVER?date=2025-12-25&time=10:00`
 ---
 
 ## 🕷️ Scraping Manual y Programado
