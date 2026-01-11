@@ -11,6 +11,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 
     Route::get('/exchange-rate', [ExchangeRateController::class, 'latest']);
+    Route::get('/precious-metals', [\App\Http\Controllers\Api\PreciousMetalController::class, 'index']);
+    Route::get('/precious-metals/{metal}', [\App\Http\Controllers\Api\PreciousMetalController::class, 'show']);
 });
 
 // For testing purposes, maybe a public route or just keep it secure as requested.
