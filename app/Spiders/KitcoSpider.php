@@ -24,20 +24,26 @@ class KitcoSpider extends BasicSpider
     {
         // ... (Market status logic remains same, but let's just keep the core parsing part here to handle the "0 tables" issue)
 
-        // 1. Check Market Status (Simplified for brevity in this edit, assuming existing logic or we re-implement)
+        // 1. Check Market Status
+        // The "MARKET IS OPEN" text is sometimes missing or changed in the DOM.
+        // We default to TRUE (try to scrape) unless we explicitly see "CLOSED".
         $statusNode = $response->filterXPath("//*[contains(text(), 'MARKET IS')]");
-        $isMarketOpen = false;
-        if ($statusNode->count() > 0 && str_contains(strtoupper($statusNode->text()), 'OPEN')) {
-            $isMarketOpen = true;
-        } else {
-            // Fallback check
-             $willOpenNode = $response->filterXPath("//*[contains(text(), 'Will OPEN in')]");
-             if ($willOpenNode->count() > 0) {
-                 Log::info("KitcoSpider: Market explicitly CLOSED.");
+        $isMarketOpen = true; // Default to TRUE to ensure we scrape if layout changes
+
+        if ($statusNode->count() > 0) {
+            $text = strtoupper($statusNode->text());
+            if (str_contains($text, 'CLOSED')) {
                  $isMarketOpen = false;
-             } else {
-                 $isMarketOpen = true;
-             }
+                 // Double check "Will OPEN in" to confirm it's actually closed
+                 $willOpenNode = $response->filterXPath("//*[contains(text(), 'Will OPEN in')]");
+                 if ($willOpenNode->count() > 0) {
+                     Log::info("KitcoSpider: Market explicitly CLOSED (found 'Will OPEN in').");
+                     $isMarketOpen = false;
+                 }
+            }
+        } else {
+             // If we can't find the status, we assume it's valid to scrape so we don't miss data.
+             Log::warning("KitcoSpider: Could not find 'MARKET IS' status text. Assuming market is OPEN/Scrapeable.");
         }
 
         // Logic for "scrape if DB empty"
